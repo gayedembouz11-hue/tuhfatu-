@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f5a40">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>Tuhfatu al-Mutadarri'în</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
@@ -126,6 +129,7 @@ function tab(k){const r=k==='R';$('#vR').hidden=!r;$('#vS').hidden=r;$('#bar').h
 $('#tR').onclick=()=>tab('R');$('#tS').onclick=()=>tab('S');
 if(!SR||isBrave){$('#warn').hidden=false;$('#warn').textContent=isBrave?"Vous utilisez Brave : la reconnaissance vocale y est bloquée. Pour réciter à voix haute, ouvrez cette page dans Chrome, Edge ou Safari. Le mode masqué, la lecture et la recherche par saisie fonctionnent ici.":"La reconnaissance vocale n'est pas disponible dans ce navigateur. Ouvrez la page dans Chrome, Edge ou Safari."}
 paint();
+try{if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js')}catch(_){}
 </script>
 </body>
 </html>
