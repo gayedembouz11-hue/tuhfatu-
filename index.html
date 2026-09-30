@@ -6,7 +6,7 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f5a40">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>Khassidas</title>
+<title>Find abyat</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -58,7 +58,7 @@ body:not(.sp) .ph{display:none}body:not(.st) .fr{display:none}.hide .ph{display:
 </head>
 <body>
 <header>
-<div class="top"><button id="bHome" class="back" aria-label="Accueil" hidden>←</button><h1 id="ttl">Khassidas</h1></div>
+<div class="top"><button id="bHome" class="back" aria-label="Accueil" hidden>←</button><h1 id="ttl">Find abyat</h1></div>
 <div class="tabs" id="tabs" role="tablist"><button role="tab" id="tR" aria-selected="true">Réciter</button><button role="tab" id="tS" aria-selected="false">Retrouver un vers</button></div>
 </header>
 <main>
@@ -89,7 +89,7 @@ async function getJ(u){const r=await fetch(u,{cache:'no-cache'});if(!r.ok)throw 
 async function load(id){if(DATA[id])return DATA[id];const d=await getJ('k-'+id+'.json');d.fr_=[];
  for(let n=1;n<30;n++){try{const t=await getJ('t-'+id+'-'+n+'.json');t.fr.forEach((x,i)=>d.fr_[t.from+i]=x)}catch(_){break}}
  d.nv=d.lines.filter(l=>l.a.length>1).length;DATA[id]=d;return d}
-function home(){view='H';if(listening)stopRec();$('#vH').hidden=false;$('#vR').hidden=true;$('#vS').hidden=true;$('#bar').hidden=true;$('#tabs').hidden=false;$('#ttl').textContent='Khassidas';$('#bHome').hidden=true;scrollTo(0,0);
+function home(){view='H';if(listening)stopRec();$('#vH').hidden=false;$('#vR').hidden=true;$('#vS').hidden=true;$('#bar').hidden=true;$('#tabs').hidden=false;$('#ttl').textContent='Find abyat';$('#bHome').hidden=true;scrollTo(0,0);
  const c=$('#cards');c.innerHTML='';CAT.forEach(k=>{const b=document.createElement('button');b.className='card';
   b.innerHTML='<div class="ar"></div><div class="m"></div><div></div>';b.children[0].textContent=k.ar;b.children[1].textContent=k.fr+' · '+k.n+' vers';
   if(k.tr)b.children[2].innerHTML='<span class="bd">Traduction FR</span>';if(k.ph)b.children[2].innerHTML+='<span class="bd">Phonétique</span>';
