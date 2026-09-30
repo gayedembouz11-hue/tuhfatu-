@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Find abyat</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#fbfaf6;--ink:#17231c;--mute:#62706a;--line:#dfe3da;--acc:#0f5a40;--accfg:#fff;--ok:#12803f;--miss:#b3261e;--cur:#e3efe6;--card:#fff;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -28,8 +28,8 @@ main{max-width:640px;margin:0 auto;padding:12px 14px 150px}
 .v{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
 .v .n{flex:none;min-width:30px;height:30px;border-radius:15px;border:1px solid var(--line);background:var(--card);color:var(--mute);font:600 12px system-ui;margin-top:8px}
 .v .t{flex:1}
-.h{margin:0;text-align:center;font:400 clamp(21px,6vw,29px)/1.95 Amiri,"Traditional Arabic",serif}
-.w{transition:color .15s,filter .2s;border-radius:6px;padding:0 2px}
+.h{margin:0;text-align:center;font-family:var(--ff);font-size:var(--fs);line-height:2.25;font-weight:400;text-rendering:optimizeLegibility}
+.w{padding:0 3px;transition:color .15s,filter .2s;border-radius:6px;padding:0 2px}
 .w.ok{color:var(--ok)}
 .w.miss{color:var(--miss);text-decoration:underline wavy;text-underline-offset:6px}
 .w.cur{background:var(--cur)}
@@ -51,10 +51,11 @@ main{max-width:640px;margin:0 auto;padding:12px 14px 150px}
 button:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
 [hidden]{display:none!important}
 .top{display:flex;align-items:center;gap:8px;margin-bottom:6px}.top h1{flex:1;margin:0}.back{flex:none;width:40px;height:40px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font-size:20px}
-.card{display:block;width:100%;text-align:center;padding:12px;margin-bottom:10px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);cursor:pointer}.card .ar{font:700 26px/1.5 Amiri,serif}.card .m{font-size:13px;color:var(--mute)}.bd{display:inline-block;margin:4px 3px 0;padding:2px 8px;border-radius:10px;background:var(--cur);font-size:12px}
+.card{display:block;width:100%;text-align:center;padding:12px;margin-bottom:10px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);cursor:pointer}.card .ar{font-family:var(--ff);font-weight:700;font-size:28px;line-height:1.7}.card .m{font-size:13px;color:var(--mute)}.bd{display:inline-block;margin:4px 3px 0;padding:2px 8px;border-radius:10px;background:var(--cur);font-size:12px}
 .opts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}.opts label{font-size:14px;padding:6px 10px;border:1px solid var(--line);border-radius:16px;background:var(--card)}
-.ph{margin:0;text-align:center;font:italic 15px/1.4 system-ui;color:var(--mute);direction:ltr}.fr{margin:2px 0 4px;text-align:center;font:15px/1.45 system-ui;color:var(--ink);direction:ltr}.hd{margin:14px 0 4px;text-align:center;font:700 20px Amiri,serif;color:var(--acc)}
-body:not(.sp) .ph{display:none}body:not(.st) .fr{display:none}.hide .ph{display:none}.tn{flex-basis:100%;font-size:12.5px;color:var(--mute);margin:0}</style>
+.ph{margin:0;text-align:center;font:italic 15px/1.4 system-ui;color:var(--mute);direction:ltr}.fr{margin:2px 0 4px;text-align:center;font:15px/1.45 system-ui;color:var(--ink);direction:ltr}.hd{margin:14px 0 4px;text-align:center;font-family:var(--ff);font-weight:700;font-size:calc(var(--fs)*.8);color:var(--acc)}
+body:not(.sp) .ph{display:none}body:not(.st) .fr{display:none}.hide .ph{display:none}.tn{flex-basis:100%;font-size:12.5px;color:var(--mute);margin:0}.fz{display:flex;gap:6px;margin-bottom:8px}.fz button{flex:1;padding:8px 6px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font:600 14px system-ui}
+:root{--fs:32px;--ff:"Scheherazade New",Amiri,"Traditional Arabic",serif}</style>
 </head>
 <body>
 <header>
@@ -64,7 +65,7 @@ body:not(.sp) .ph{display:none}body:not(.st) .fr{display:none}.hide .ph{display:
 <main>
 <div id="warn" class="warn" hidden>La reconnaissance vocale n'est pas disponible dans ce navigateur. Ouvrez la page dans Chrome (Android ou ordinateur) pour réciter à voix haute. La recherche par saisie reste disponible.</div>
 <section id="vH"><p class="note">Choisissez un khassida.</p><div id="cards"></div></section>
-<section id="vR" hidden><div class="opts" id="opts"></div><p class="note">Appuyez sur le micro et récitez : mots justes en vert, mots sautés en rouge. Touchez un numéro pour reprendre à cet endroit.</p><div id="list"></div></section>
+<section id="vR" hidden><div class="fz"><button id="fm" aria-label="Réduire le texte arabe">A−</button><button id="fp" aria-label="Agrandir le texte arabe">A+</button><button id="ff"></button></div><div class="opts" id="opts"></div><p class="note">Appuyez sur le micro et récitez : mots justes en vert, mots sautés en rouge. Touchez un numéro pour reprendre à cet endroit.</p><div id="list"></div></section>
 <section id="vS" hidden>
 <p class="note">Saisissez ou dites un vers ou un demi-vers en arabe. Le vers et sa place s'affichent.</p>
 <div class="q"><input id="qi" placeholder="اكتب جزءا من البيت" aria-label="Vers à chercher" autocomplete="off"><button id="qm" aria-label="Dicter">🎤</button></div>
@@ -149,6 +150,10 @@ function tab(k){const r=k==='R';$('#tR').setAttribute('aria-selected',r);$('#tS'
 $('#tR').onclick=()=>{$('#vS').hidden=true;cur&&view==='R'?(tab('R')):home();$('#tR').setAttribute('aria-selected',true);$('#tS').setAttribute('aria-selected',false)};
 $('#tS').onclick=()=>tab('S');$('#bHome').onclick=()=>{$('#tR').setAttribute('aria-selected',true);$('#tS').setAttribute('aria-selected',false);home()};
 if(!SR||isBrave){$('#warn').hidden=false;$('#warn').textContent=isBrave?"Vous utilisez Brave : la reconnaissance vocale y est bloquée. Pour réciter à voix haute, ouvrez cette page dans Chrome, Edge ou Safari.":"La reconnaissance vocale n'est pas disponible dans ce navigateur. Ouvrez la page dans Chrome, Edge ou Safari."}
+const FF=[["Scheherazade New","Scheherazade"],["Noto Naskh Arabic","Naskh"],["Amiri","Amiri"]];
+let fs=+ls('kh_fs')||32,fi=+ls('kh_ff')||0;
+function applyF(){const r=document.documentElement.style;r.setProperty('--fs',fs+'px');r.setProperty('--ff',"'"+FF[fi][0]+"',Amiri,'Traditional Arabic',serif");$('#ff').textContent='Police : '+FF[fi][1]}
+$('#fm').onclick=()=>{fs=Math.max(22,fs-2);ls('kh_fs',fs);applyF()};$('#fp').onclick=()=>{fs=Math.min(52,fs+2);ls('kh_fs',fs);applyF()};$('#ff').onclick=()=>{fi=(fi+1)%FF.length;ls('kh_ff',fi);applyF()};applyF();
 getJ('catalog.json').then(c=>{CAT=c;home()}).catch(()=>{$('#cards').innerHTML='<p class="note">Impossible de charger la liste (catalog.json). Vérifiez que le fichier est bien sur GitHub.</p>'});
 try{if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js')}catch(_){}
 </script>
