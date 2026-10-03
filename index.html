@@ -53,6 +53,7 @@ main{max-width:640px;margin:0 auto;padding:12px 14px 150px}
 .q{display:flex;gap:8px;margin-bottom:12px}
 .q input{flex:1;min-width:0;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:400 22px Amiri,serif;direction:rtl}
 .q button{flex:none;width:52px;border:0;border-radius:10px;background:var(--acc);color:var(--accfg);font-size:22px}
+.q button.mic{width:44px;height:70px;align-self:center;background:none;border-radius:14px}
 .res{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:10px;cursor:pointer}
 .res small{color:var(--mute);font-size:13px}
 button:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
@@ -75,7 +76,26 @@ body:not(.sp) .ph{display:none}body:not(.st) .fr{display:none}.hide .ph{display:
 <section id="vR" hidden><div class="fz"><button id="fm" aria-label="Réduire le texte arabe">A−</button><button id="fp" aria-label="Agrandir le texte arabe">A+</button><button id="ff"></button></div><div class="opts" id="opts"></div><p class="note">Appuyez sur le micro et récitez : mots justes en vert, mots sautés en rouge. Touchez un numéro pour reprendre à cet endroit.</p><div id="list"></div></section>
 <section id="vS" hidden>
 <p class="note">Saisissez ou dites un vers ou un demi-vers en arabe. Le vers et sa place s'affichent.</p>
-<div class="q"><input id="qi" placeholder="اكتب جزءا من البيت" aria-label="Vers à chercher" autocomplete="off"><button id="qm" aria-label="Dicter">🎤</button></div>
+<div class="q"><input id="qi" placeholder="اكتب جزءا من البيت" aria-label="Vers à chercher" autocomplete="off"><button class="mic" id="qm" aria-label="Dicter"><svg viewBox="0 0 60 96" aria-hidden="true">
+<defs>
+<linearGradient id="mg2" x1="0" x2="1"><stop offset="0" stop-color="#ffe58a"/><stop offset=".55" stop-color="#f4c542"/><stop offset="1" stop-color="#c8942a"/></linearGradient>
+<linearGradient id="mc2" x1="0" x2="1"><stop offset="0" stop-color="#4f55c9"/><stop offset="1" stop-color="#2b2f86"/></linearGradient>
+<linearGradient id="md2" x1="0" x2="1"><stop offset="0" stop-color="#d9a93a"/><stop offset="1" stop-color="#9c6f1c"/></linearGradient>
+</defs>
+<line x1="30" y1="1" x2="30" y2="9" stroke="#e0b038" stroke-width="1.6" stroke-linecap="round"/>
+<circle cx="30" cy="3" r="2" fill="#f4c542"/>
+<path d="M21 22C21 15 27 12 30 8C33 12 39 15 39 22Z" fill="url(#mc2)"/>
+<rect x="19" y="22" width="22" height="3" rx="1" fill="url(#md2)"/>
+<rect x="22" y="25" width="16" height="15" fill="url(#mg2)"/>
+<path class="win" d="M25 36V31a2 2 0 0 1 4 0v5zM31 36V31a2 2 0 0 1 4 0v5z"/>
+<rect x="15" y="40" width="30" height="4" rx="1.5" fill="url(#md2)"/>
+<rect x="18" y="44" width="24" height="2.5" fill="#b98524"/>
+<rect x="19" y="46" width="22" height="43" fill="url(#mg2)"/>
+<rect x="17.5" y="53" width="25" height="3" rx="1" fill="url(#md2)"/>
+<rect class="ic" x="26" y="60" width="8" height="13" rx="4" stroke-width="0"/>
+<path class="ic" d="M22 69a8 8 0 0 0 16 0M30 77v5M26 82h8" fill="none" stroke-width="2" stroke-linecap="round"/>
+<rect x="14" y="89" width="32" height="7" rx="2" fill="url(#md2)"/>
+</svg></button></div>
 <div id="out"></div>
 </section>
 </main>
@@ -152,7 +172,7 @@ function fail(code){const w=$('#warn');w.hidden=false;
  else if(code==='language-not-supported')w.textContent="La reconnaissance vocale en arabe n'est pas disponible sur cet appareil. Essayez Chrome.";
  else if(code==='audio-capture')w.textContent="Aucun micro détecté. Vérifiez qu'il est branché et autorisé pour ce site.";
  else w.textContent="Le micro est bloqué. Autorisez-le pour ce site dans les réglages du navigateur, puis rechargez la page.";
- w.scrollIntoView({block:'center'});$('#qm').textContent='🎤'}
+ w.scrollIntoView({block:'center'});$('#qm').classList.remove('on')}
 function run(onText,cont){rec=new SR();rec.lang='ar-SA';rec.continuous=cont;rec.interimResults=true;
  rec.onresult=e=>{let t='';for(let i=0;i<e.results.length;i++)t+=e.results[i][0].transcript+' ';onText(t.trim())};
  rec.onerror=e=>{if(['not-allowed','service-not-allowed','network','audio-capture','language-not-supported'].includes(e.error)){listening=false;mic(false);fail(e.error)}};
@@ -171,7 +191,7 @@ async function search(q){const qw=q.split(/\s+/).map(norm).filter(Boolean),out=$
  top.forEach(r=>{const d=DATA[r.id],l=d.lines[r.li],e=document.createElement('div');e.className='res';e.tabIndex=0;const s=document.createElement('small');s.textContent=d.fr+' · ligne '+(r.li+1)+' · touchez pour réciter à partir d\'ici';e.append(s);
   l.a.forEach(h=>{const p=document.createElement('p');p.className='h';p.dir='rtl';p.textContent=h;e.append(p)});e.onclick=()=>{tab('R');open(r.id,r.li)};out.append(e)})}
 $('#qi').oninput=e=>search(e.target.value);
-$('#qm').onclick=()=>{if(!SR){fail('network');return}$('#qm').textContent='…';listening=false;run(t=>{$('#qi').value=t;search(t)},false);cb=()=>{$('#qm').textContent='🎤'}};
+$('#qm').onclick=()=>{if(!SR){fail('network');return}$('#qm').classList.add('on');listening=false;run(t=>{$('#qi').value=t;search(t)},false);cb=()=>{$('#qm').classList.remove('on')}};
 function tab(k){const r=k==='R';$('#tR').setAttribute('aria-selected',r);$('#tS').setAttribute('aria-selected',!r);if(!r){if(listening)stopRec();$('#vH').hidden=true;$('#vR').hidden=true;$('#vS').hidden=false;$('#bar').hidden=true;$('#bHome').hidden=false}else{cur&&view==='R'?open(cur):home()}scrollTo(0,0)}
 $('#tR').onclick=()=>{$('#vS').hidden=true;cur&&view==='R'?(tab('R')):home();$('#tR').setAttribute('aria-selected',true);$('#tS').setAttribute('aria-selected',false)};
 $('#tS').onclick=()=>tab('S');$('#bHome').onclick=()=>{$('#tR').setAttribute('aria-selected',true);$('#tS').setAttribute('aria-selected',false);home()};
