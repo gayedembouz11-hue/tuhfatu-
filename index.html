@@ -70,6 +70,8 @@ body.vs .warn{background:rgba(255,255,255,.92);color:#17231c}
 .mic.big{width:92px;height:148px}
 .hl{margin:14px 0 4px;font-size:15px;font-weight:600}
 .heard{min-height:2.2em;margin:6px 0 0;font:400 28px/1.6 var(--ff);color:#fff}
+.lx{display:flex;align-items:center;justify-content:center;gap:8px;margin:8px auto 0;font-size:13px;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.6);cursor:pointer}
+.lx input{width:20px;height:20px;accent-color:#f4c542}
 body.vs .res{background:var(--card);box-shadow:0 4px 18px rgba(0,0,0,.25);border-color:transparent}
 body.vs #outV .note{color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.6)}
 .res{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:10px;cursor:pointer}
@@ -118,6 +120,7 @@ body:not(.sp) .ph{display:none}body:not(.st) .fr{display:none}.hide .ph{display:
 <rect x="14" y="89" width="32" height="7" rx="2" fill="url(#md2)"/>
 </svg></button></div>
 <p class="hl" id="hl">Touchez le minaret et parlez</p>
+<label class="lx"><input type="checkbox" id="cX" checked> Écouter un autre appareil (écoute continue)</label>
 <p class="heard" id="heard" dir="rtl" aria-live="polite"></p>
 </div>
 <div id="outV"></div>
@@ -160,13 +163,13 @@ async function getJ(u){const r=await fetch(u,{cache:'no-cache'});if(!r.ok)throw 
 async function load(id){if(DATA[id])return DATA[id];const d=await getJ('k-'+id+'.json');d.fr_=[];
  for(let n=1;n<30;n++){try{const t=await getJ('t-'+id+'-'+n+'.json');t.fr.forEach((x,i)=>d.fr_[t.from+i]=x)}catch(_){break}}
  d.nv=d.lines.filter(l=>l.a.length>1).length;DATA[id]=d;return d}
-function home(){view='H';$('#tR').setAttribute('aria-selected',true);$('#tS').setAttribute('aria-selected',false);document.body.classList.remove('vs');if(listening)stopRec();$('#vH').hidden=false;$('#vR').hidden=true;$('#vS').hidden=true;$('#bar').hidden=true;$('#tabs').hidden=false;$('#ttl').textContent='Find abyat';$('#bHome').hidden=true;scrollTo(0,0);
+function home(){if(vOn)stopV();view='H';$('#tR').setAttribute('aria-selected',true);$('#tS').setAttribute('aria-selected',false);document.body.classList.remove('vs');if(listening)stopRec();$('#vH').hidden=false;$('#vR').hidden=true;$('#vS').hidden=true;$('#bar').hidden=true;$('#tabs').hidden=false;$('#ttl').textContent='Find abyat';$('#bHome').hidden=true;scrollTo(0,0);
  const c=$('#cards');c.innerHTML='';CAT.forEach(k=>{const b=document.createElement('button');b.className='card';
   b.innerHTML='<div class="ar"></div><div class="m"></div><div></div>';b.children[0].textContent=k.ar;b.children[1].textContent=k.fr+' · '+k.n+' vers';
   if(k.tr)b.children[2].innerHTML='<span class="bd">Traduction FR</span>';if(k.ph)b.children[2].innerHTML+='<span class="bd">Phonétique</span>';
   b.onclick=()=>open(k.id);c.append(b)})}
 async function open(id,vi){const d=await load(id).catch(()=>null);if(!d){alert('Chargement impossible. Vérifiez la connexion.');return}
- if(listening)stopRec();cur=id;view='R';document.body.classList.remove('vs');$('#vH').hidden=true;$('#vS').hidden=true;$('#vR').hidden=false;$('#bar').hidden=false;$('#bHome').hidden=false;$('#ttl').textContent=d.ar;
+ if(vOn)stopV();if(listening)stopRec();cur=id;view='R';document.body.classList.remove('vs');$('#vH').hidden=true;$('#vS').hidden=true;$('#vR').hidden=false;$('#bar').hidden=false;$('#bHome').hidden=false;$('#ttl').textContent=d.ar;
  const list=$('#list');list.innerHTML='';W=[];LS=[];let n=0;const hasP=d.lines.some(l=>l.p),hasT=d.fr_.some(Boolean);
  d.lines.forEach((l,li)=>{LS.push(W.length);
   if(l.s){const h=document.createElement('div');h.className='hd';h.dir='rtl';h.textContent=l.a[0];h.id='v'+li;list.append(h);return}
@@ -206,18 +209,44 @@ function mic(on){const b=$('#bMic');b.classList.toggle('on',on);b.setAttribute('
 $('#bMic').onclick=()=>{if(!SR){fail('network');return}if(listening){stopRec();return}listening=true;mic(true);startP=cursor;baseSt=st.slice();run(t=>{const r=align(t.split(/\s+/),startP,baseSt);st=r.s;cursor=r.p;paint()},true)};
 $('#bHide').onclick=e=>{const on=!document.body.classList.contains('hide');document.body.classList.toggle('hide',on);e.currentTarget.setAttribute('aria-pressed',on);e.currentTarget.textContent=on?'Afficher le texte':'Masquer le texte'};
 $('#bReset').onclick=()=>{if(listening)stopRec();st=st.map(()=>0);cursor=0;W.forEach(w=>w.el.classList.remove('rev'));paint();scrollTo({top:0,behavior:'smooth'})};
-async function search(q,out){const qw=q.split(/\s+/).map(norm).filter(Boolean);out.innerHTML='';if(!qw.length)return;
- await Promise.all(CAT.map(k=>load(k.id).catch(()=>0)));const qj=qw.join(''),res=[];
- CAT.forEach(k=>{const d=DATA[k.id];if(!d)return;d.lines.forEach((l,li)=>{if(l.s)return;if(!d._i)d._i=d.lines.map(x=>x.a.join(' ').split(' ').map(norm).filter(Boolean));const ws=d._i[li];let hit=0;
-  qw.forEach(a=>{let bs=0,bw='';ws.forEach(w=>{const x=(a.length>2&&w.includes(a))?0.95:sim(a,w);if(x>bs){bs=x;bw=w}});if(ok(a,bw,bs))hit++});if(qj.length>3&&ws.join('').includes(qj))hit+=qw.length;if(hit>0)res.push({id:k.id,li,hit})})});
- res.sort((a,b)=>b.hit-a.hit);const top=res.slice(0,6);
- if(!top.length){out.innerHTML='<p class="note">Aucun vers trouvé. Essayez avec un ou deux mots de plus.</p>';return}
+let sq=0;
+async function search(q,out,soft){const my=++sq,QS=(Array.isArray(q)?q:[q]).map(x=>x.split(/\s+/).map(norm).filter(Boolean)).filter(x=>x.length);if(!QS.length){if(!soft)out.innerHTML='';return}
+ await Promise.all(CAT.map(k=>load(k.id).catch(()=>0)));if(my!==sq)return;const best=new Map();
+ QS.forEach(qw=>{const qj=qw.join('');
+  CAT.forEach(k=>{const d=DATA[k.id];if(!d)return;d.lines.forEach((l,li)=>{if(l.s)return;if(!d._i)d._i=d.lines.map(x=>x.a.join(' ').split(' ').map(norm).filter(Boolean));const ws=d._i[li];let hit=0;const idx=[];
+   qw.forEach(a=>{let bs=0,bw='',bj=-1;ws.forEach((w,j)=>{const x=(a.length>2&&w.includes(a))?0.95:sim(a,w);if(x>bs){bs=x;bw=w;bj=j}});if(ok(a,bw,bs)){hit++;idx.push(bj)}else idx.push(-1)});
+   for(let i=1;i<idx.length;i++)if(idx[i]>=0&&idx[i]===idx[i-1]+1)hit+=0.5;
+   if(qj.length>3&&ws.join('').includes(qj))hit+=qw.length;
+   if(hit>0){const key=k.id+'|'+li,o=best.get(key);if(!o||hit>o.hit)best.set(key,{id:k.id,li,hit})}})})});
+ const res=[...best.values()].sort((a,b)=>b.hit-a.hit),top=res.slice(0,6);
+ if(!top.length){if(!soft)out.innerHTML='<p class="note">Aucun vers trouvé. Essayez avec un ou deux mots de plus.</p>';return}
+ out.innerHTML='';
  top.forEach(r=>{const d=DATA[r.id],l=d.lines[r.li],e=document.createElement('div');e.className='res';e.tabIndex=0;const s=document.createElement('small');s.textContent=d.fr+' · ligne '+(r.li+1)+' · touchez pour réciter à partir d\'ici';e.append(s);
-  l.a.forEach(h=>{const p=document.createElement('p');p.className='h';p.dir='rtl';p.textContent=h;e.append(p)});e.onclick=()=>{tab('R');open(r.id,r.li)};out.append(e)})}
+  l.a.forEach(h=>{const p=document.createElement('p');p.className='h';p.dir='rtl';p.textContent=h;e.append(p)});e.onclick=()=>{if(vOn)stopV();tab('R');open(r.id,r.li)};out.append(e)})}
 $('#qi').oninput=e=>{const v=e.target.value;$('#cards').hidden=!!v.trim();search(v,$('#out'))};
-function setQ(on){const b=$('#qm');b.classList.toggle('on',on);b.setAttribute('aria-label',on?'Arrêter':'Dicter');$('#hl').textContent=on?'Je vous écoute…':'Touchez le minaret et parlez'}
-$('#qm').onclick=()=>{if($('#qm').classList.contains('on')){try{rec&&rec.stop()}catch(_){}setQ(false);return}if(!SR){fail('network');return}if(listening)stopRec();setQ(true);$('#heard').textContent='';$('#outV').innerHTML='';run(t=>{$('#heard').textContent=t;search(t,$('#outV'))},false);cb=()=>setQ(false)};
-function tab(k){const r=k==='R';document.body.classList.toggle('vs',!r);$('#tR').setAttribute('aria-selected',r);$('#tS').setAttribute('aria-selected',!r);if(!r){if(listening)stopRec();$('#vH').hidden=true;$('#vR').hidden=true;$('#vS').hidden=false;$('#bar').hidden=true;$('#bHome').hidden=true;$('#ttl').textContent='Find abyat'}else{cur&&view==='R'?open(cur):home()}scrollTo(0,0)}
+let vOn=false,vBuf=[],vSess=[],vWake=null,vT=null,vStop=null;
+async function wl(on){try{if(on){if('wakeLock' in navigator&&!vWake)vWake=await navigator.wakeLock.request('screen')}else if(vWake){await vWake.release();vWake=null}}catch(_){vWake=null}}
+function setQ(on){const b=$('#qm');b.classList.toggle('on',on);b.setAttribute('aria-label',on?'Arrêter':'Dicter');$('#hl').textContent=on?(vOn?"J'écoute en continu… touchez le minaret pour arrêter":'Je vous écoute…'):'Touchez le minaret et parlez'}
+function lastW(a,n){return a.join(' ').split(/\s+/).filter(Boolean).slice(-n).join(' ')}
+function vUpdate(){const segs=vBuf.concat(vSess);if(!segs.length)return;
+ const p=segs.map(x=>x[0]||''),qs=[lastW(p,10),lastW(p,5)];
+ for(let k=1;k<3;k++){const q=lastW(segs.map(x=>x[k]||x[0]||''),10);if(q&&!qs.includes(q))qs.push(q)}
+ $('#heard').textContent=lastW(p,14);
+ clearTimeout(vT);vT=setTimeout(()=>search(qs.filter(Boolean),$('#outV'),true),250)}
+function stopV(){vOn=false;clearTimeout(vT);clearTimeout(vStop);try{rec&&rec.stop()}catch(_){}wl(false);setQ(false)}
+function runV(){rec=new SR();rec.lang='ar-SA';rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=3;vSess=[];
+ rec.onresult=e=>{vSess=[];for(let i=0;i<e.results.length;i++){const r=e.results[i],a=[];for(let k=0;k<r.length;k++)a.push(r[k].transcript);vSess.push(a)}vUpdate()};
+ rec.onerror=e=>{if(['not-allowed','service-not-allowed','network','audio-capture','language-not-supported'].includes(e.error)){stopV();fail(e.error)}};
+ rec.onend=()=>{if(!vOn)return;vBuf=vBuf.concat(vSess);vSess=[];if(vBuf.length>40)vBuf=vBuf.slice(-40);setTimeout(()=>{if(vOn){try{runV()}catch(_){stopV()}}},200)};
+ try{rec.start()}catch(_){stopV()}}
+$('#cX').checked=ls('kh_x')!=='0';$('#cX').onchange=e=>ls('kh_x',e.target.checked?'1':'0');
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&vOn){stopV();$('#hl').textContent="Écoute interrompue : l'application est passée en arrière-plan. Touchez le minaret pour relancer."}else if(!document.hidden&&vOn)wl(true)});
+$('#qm').onclick=()=>{if(vOn){stopV();return}
+ if($('#qm').classList.contains('on')){try{rec&&rec.stop()}catch(_){}setQ(false);return}
+ if(!SR){fail('network');return}if(listening)stopRec();$('#heard').textContent='';$('#outV').innerHTML='';
+ if($('#cX').checked){vOn=true;vBuf=[];vSess=[];setQ(true);wl(true);vStop=setTimeout(()=>{if(vOn){stopV();$('#hl').textContent='Écoute arrêtée après 5 minutes. Touchez le minaret pour relancer.'}},300000);runV()}
+ else{setQ(true);run(t=>{$('#heard').textContent=t;search(t,$('#outV'))},false);cb=()=>setQ(false)}};
+function tab(k){const r=k==='R';if(r&&vOn)stopV();document.body.classList.toggle('vs',!r);$('#tR').setAttribute('aria-selected',r);$('#tS').setAttribute('aria-selected',!r);if(!r){if(listening)stopRec();$('#vH').hidden=true;$('#vR').hidden=true;$('#vS').hidden=false;$('#bar').hidden=true;$('#bHome').hidden=true;$('#ttl').textContent='Find abyat'}else{cur&&view==='R'?open(cur):home()}scrollTo(0,0)}
 $('#tR').onclick=()=>{$('#vS').hidden=true;cur&&view==='R'?(tab('R')):home();$('#tR').setAttribute('aria-selected',true);$('#tS').setAttribute('aria-selected',false)};
 $('#tS').onclick=()=>tab('S');$('#bHome').onclick=()=>{$('#tR').setAttribute('aria-selected',true);$('#tS').setAttribute('aria-selected',false);home()};
 if(!SR||isBrave){$('#warn').hidden=false;$('#warn').textContent=isBrave?"Vous utilisez Brave : la reconnaissance vocale y est bloquée. Pour réciter à voix haute, ouvrez cette page dans Chrome, Edge ou Safari.":"La reconnaissance vocale n'est pas disponible dans ce navigateur. Ouvrez la page dans Chrome, Edge ou Safari."}
