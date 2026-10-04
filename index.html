@@ -83,17 +83,17 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-of
 body:not(.sp) .ph{display:none}body:not(.st) .fr{display:none}.hide .ph{display:none}.tn{flex-basis:100%;font-size:12.5px;color:var(--mute);margin:0}.fz{display:flex;gap:6px;margin-bottom:8px}.fz button{flex:1;padding:8px 6px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font:600 14px system-ui}
 :root{--fs:32px;--ff:"Scheherazade New",Amiri,"Traditional Arabic",serif}</style>
 </head>
-<body>
+<body class="vs">
 <div id="bgS" aria-hidden="true"></div>
 <header>
 <div class="top"><button id="bHome" class="back" aria-label="Accueil" hidden>←</button><h1 id="ttl">Find abyat</h1></div>
-<div class="tabs" id="tabs" role="tablist"><button role="tab" id="tR" aria-selected="true">Réciter</button><button role="tab" id="tS" aria-selected="false">Retrouver un vers</button></div>
+<div class="tabs" id="tabs" role="tablist"><button role="tab" id="tS" aria-selected="true">Retrouver un vers</button><button role="tab" id="tR" aria-selected="false">Réciter</button></div>
 </header>
 <main>
 <div id="warn" class="warn" hidden>La reconnaissance vocale n'est pas disponible dans ce navigateur. Ouvrez la page dans Chrome (Android ou ordinateur) pour réciter à voix haute. La recherche par saisie reste disponible.</div>
-<section id="vH"><div class="q"><input id="qi" placeholder="اكتب جزءا من البيت" aria-label="Chercher un vers par écrit" autocomplete="off"></div><div id="out"></div><p class="note">Choisissez un khassida, ou saisissez un vers ou un demi-vers en arabe ci-dessus.</p><div id="cards"></div></section>
+<section id="vH" hidden><div class="q"><input id="qi" placeholder="اكتب جزءا من البيت" aria-label="Chercher un vers par écrit" autocomplete="off"></div><div id="out"></div><p class="note">Choisissez un khassida, ou saisissez un vers ou un demi-vers en arabe ci-dessus.</p><div id="cards"></div></section>
 <section id="vR" hidden><div class="fz"><button id="fm" aria-label="Réduire le texte arabe">A−</button><button id="fp" aria-label="Agrandir le texte arabe">A+</button><button id="ff"></button></div><div class="opts" id="opts"></div><p class="note">Appuyez sur le micro et récitez : mots justes en vert, mots sautés en rouge. Touchez un numéro pour reprendre à cet endroit.</p><div id="list"></div></section>
-<section id="vS" hidden>
+<section id="vS">
 <div class="hero">
 <h2 lang="ar" dir="rtl">ابحث عن بيت</h2>
 <p class="hs">Récitez un vers ou un demi-vers : je retrouve le khassida et sa place.</p>
@@ -160,7 +160,7 @@ async function getJ(u){const r=await fetch(u,{cache:'no-cache'});if(!r.ok)throw 
 async function load(id){if(DATA[id])return DATA[id];const d=await getJ('k-'+id+'.json');d.fr_=[];
  for(let n=1;n<30;n++){try{const t=await getJ('t-'+id+'-'+n+'.json');t.fr.forEach((x,i)=>d.fr_[t.from+i]=x)}catch(_){break}}
  d.nv=d.lines.filter(l=>l.a.length>1).length;DATA[id]=d;return d}
-function home(){view='H';document.body.classList.remove('vs');if(listening)stopRec();$('#vH').hidden=false;$('#vR').hidden=true;$('#vS').hidden=true;$('#bar').hidden=true;$('#tabs').hidden=false;$('#ttl').textContent='Find abyat';$('#bHome').hidden=true;scrollTo(0,0);
+function home(){view='H';$('#tR').setAttribute('aria-selected',true);$('#tS').setAttribute('aria-selected',false);document.body.classList.remove('vs');if(listening)stopRec();$('#vH').hidden=false;$('#vR').hidden=true;$('#vS').hidden=true;$('#bar').hidden=true;$('#tabs').hidden=false;$('#ttl').textContent='Find abyat';$('#bHome').hidden=true;scrollTo(0,0);
  const c=$('#cards');c.innerHTML='';CAT.forEach(k=>{const b=document.createElement('button');b.className='card';
   b.innerHTML='<div class="ar"></div><div class="m"></div><div></div>';b.children[0].textContent=k.ar;b.children[1].textContent=k.fr+' · '+k.n+' vers';
   if(k.tr)b.children[2].innerHTML='<span class="bd">Traduction FR</span>';if(k.ph)b.children[2].innerHTML+='<span class="bd">Phonétique</span>';
@@ -217,7 +217,7 @@ async function search(q,out){const qw=q.split(/\s+/).map(norm).filter(Boolean);o
 $('#qi').oninput=e=>{const v=e.target.value;$('#cards').hidden=!!v.trim();search(v,$('#out'))};
 function setQ(on){const b=$('#qm');b.classList.toggle('on',on);b.setAttribute('aria-label',on?'Arrêter':'Dicter');$('#hl').textContent=on?'Je vous écoute…':'Touchez le minaret et parlez'}
 $('#qm').onclick=()=>{if($('#qm').classList.contains('on')){try{rec&&rec.stop()}catch(_){}setQ(false);return}if(!SR){fail('network');return}if(listening)stopRec();setQ(true);$('#heard').textContent='';$('#outV').innerHTML='';run(t=>{$('#heard').textContent=t;search(t,$('#outV'))},false);cb=()=>setQ(false)};
-function tab(k){const r=k==='R';document.body.classList.toggle('vs',!r);$('#tR').setAttribute('aria-selected',r);$('#tS').setAttribute('aria-selected',!r);if(!r){if(listening)stopRec();$('#vH').hidden=true;$('#vR').hidden=true;$('#vS').hidden=false;$('#bar').hidden=true;$('#bHome').hidden=false}else{cur&&view==='R'?open(cur):home()}scrollTo(0,0)}
+function tab(k){const r=k==='R';document.body.classList.toggle('vs',!r);$('#tR').setAttribute('aria-selected',r);$('#tS').setAttribute('aria-selected',!r);if(!r){if(listening)stopRec();$('#vH').hidden=true;$('#vR').hidden=true;$('#vS').hidden=false;$('#bar').hidden=true;$('#bHome').hidden=true;$('#ttl').textContent='Find abyat'}else{cur&&view==='R'?open(cur):home()}scrollTo(0,0)}
 $('#tR').onclick=()=>{$('#vS').hidden=true;cur&&view==='R'?(tab('R')):home();$('#tR').setAttribute('aria-selected',true);$('#tS').setAttribute('aria-selected',false)};
 $('#tS').onclick=()=>tab('S');$('#bHome').onclick=()=>{$('#tR').setAttribute('aria-selected',true);$('#tS').setAttribute('aria-selected',false);home()};
 if(!SR||isBrave){$('#warn').hidden=false;$('#warn').textContent=isBrave?"Vous utilisez Brave : la reconnaissance vocale y est bloquée. Pour réciter à voix haute, ouvrez cette page dans Chrome, Edge ou Safari.":"La reconnaissance vocale n'est pas disponible dans ce navigateur. Ouvrez la page dans Chrome, Edge ou Safari."}
@@ -225,7 +225,7 @@ const FF=[["Scheherazade New","Scheherazade"],["Noto Naskh Arabic","Naskh"],["Am
 let fs=+ls('kh_fs')||32,fi=+ls('kh_ff')||0;
 function applyF(){const r=document.documentElement.style;r.setProperty('--fs',fs+'px');r.setProperty('--ff',"'"+FF[fi][0]+"',Amiri,'Traditional Arabic',serif");$('#ff').textContent='Police : '+FF[fi][1]}
 $('#fm').onclick=()=>{fs=Math.max(22,fs-2);ls('kh_fs',fs);applyF()};$('#fp').onclick=()=>{fs=Math.min(52,fs+2);ls('kh_fs',fs);applyF()};$('#ff').onclick=()=>{fi=(fi+1)%FF.length;ls('kh_ff',fi);applyF()};applyF();
-getJ('catalog.json').then(c=>{CAT=c;home()}).catch(()=>{$('#cards').innerHTML='<p class="note">Impossible de charger la liste (catalog.json). Vérifiez que le fichier est bien sur GitHub.</p>'});
+getJ('catalog.json').then(c=>{CAT=c;home();tab('S')}).catch(()=>{$('#cards').innerHTML='<p class="note">Impossible de charger la liste (catalog.json). Vérifiez que le fichier est bien sur GitHub.</p>';const w=$('#warn');w.hidden=false;w.textContent='Impossible de charger la liste des khassidas (catalog.json). Vérifiez la connexion, puis rechargez la page.'});
 try{if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js')}catch(_){}
 </script>
 </body>
